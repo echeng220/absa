@@ -181,7 +181,7 @@ def add_label_col(df, categories):
     enum_df['labels'] = enum_df[categories].values.tolist()
     return enum_df
 
-def calculate_scores(enum_preds_df, enum_true_df, categories):
+def calculate_scores(enum_preds_df, enum_true_df):
     y_true = np.stack(enum_true_df.labels.values)
     y_pred = np.stack(enum_preds_df.labels.values)
 
@@ -190,9 +190,6 @@ def calculate_scores(enum_preds_df, enum_true_df, categories):
     precision = precision_score(m.transform(y_true), m.transform(y_pred), average='weighted')
     recall = recall_score(m.transform(y_true), m.transform(y_pred), average='weighted')
     f1 = f1_score(m.transform(y_true), m.transform(y_pred), average='weighted')
-
-    # report = classification_report(m.transform(y_true), m.transform(y_pred), labels=categories, target_names=categories)
-    # print(report)
 
     return precision, recall, f1
 
