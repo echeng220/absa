@@ -1,8 +1,6 @@
 import xml.etree.ElementTree as et
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 
 import spacy
 spacy.load('en_core_web_sm')
@@ -14,16 +12,11 @@ from nltk.corpus import wordnet as wn
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import f1_score, precision_score, recall_score, classification_report
+from sklearn.metrics import f1_score, precision_score, recall_score
 
-import gensim
 from gensim import corpora
-from gensim.models import TfidfModel
-from gensim import matutils
-from gensim.models import CoherenceModel
+
 
 from operator import itemgetter
 
@@ -193,7 +186,37 @@ def calculate_scores(enum_preds_df, enum_true_df):
 
     return precision, recall, f1
 
+def parse_aspects(nlp, review):
+    doc = nlp(review)
+    aspects = []
+    targets = []
+    adjectives = []
+    target = ''
+    adjective = ''
+    for token in doc:
+        if (token.dep_ in ['nsubj','dobj']) and (token.pos_ =='NOUN' or token.pos_ == 'PROPN'):
+            target = token.text
+            targets.append(target)
+        if token.pos_ == 'ADJ' and token.dep_ != 'amod':
+            prepend = ''
+            for child in token.children:
+                if child.pos_ != 'ADV':
+                    continue
+                prepend += child.text + ' '
+            adjective = prepend + token.text
+            adjectives.append(adjective)
+        aspects.append({'aspect': target,'description': adjective})
 
+    if len(targets) == len(adjectives):
+        aspects = dict(zip(targets, adjectives))
+    elif len(targets) < len(adjectives):
+        adjectives = adjectives[:len(targets)]
+        aspects = dict(zip(targets, adjectives))
+    elif len(targets) > len(adjectives):
+        targets = targets[:len(adjectives)]
+        aspects = dict(zip(targets, adjectives))
+
+    return aspects
 class MultiColumnLabelEncoder:
     def __init__(self,columns=None):
         self.columns = columns # array of column names to encode
@@ -219,6 +242,10 @@ class MultiColumnLabelEncoder:
     def fit_transform(self,X,y=None):
         return self.fit(X,y).transform(X)
 
+if __name__ == "__main__":
+    nlp = spacy.load("en_core_web_sm")
+    review = 'Hostess was extremely accommodating when we arrived an hour early for our reservation.'
 
+    print(parse_aspects(nlp, review))
 
 
