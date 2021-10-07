@@ -20,6 +20,8 @@ from gensim import corpora
 
 from operator import itemgetter
 
+TOPIC_MAP = {0: 'menu', 1: 'service', 2: 'miscellaneous', 3: 'place', 4: 'price', 5: 'food', 6: 'staff'}
+
 def encode_category(sentiments, category):
     """Return the sentiment for a specific category in a dictionary where the keys are the categories, 
     and the values are the sentiments for that category."""
@@ -185,6 +187,45 @@ def calculate_scores(enum_preds_df, enum_true_df):
     f1 = f1_score(m.transform(y_true), m.transform(y_pred), average='weighted')
 
     return precision, recall, f1
+
+def parse_targets(nlp, review):
+    doc = nlp(review)
+    targets = []
+    target = ''
+
+    for token in doc:
+        if (token.dep_ in ['nsubj','dobj', 'pobj', 'ROOT']) and (token.pos_ in ['NOUN', 'PROPN', 'PRON']):
+            target = token.text
+            targets.append(target)
+
+    return targets
+
+def parse_adjectives(nlp, review):
+    doc = nlp(review)
+    adjectives = []
+    adjective = ''
+
+    for token in doc:
+        if token.pos_ == 'ADJ':
+            prepend = ''
+            for child in token.children:
+                if child.pos_ != 'ADV':
+                    continue
+                prepend += child.text + ' '
+            adjective = prepend + token.text
+            adjectives.append(adjective)
+
+    return adjectives
+
+def get_topic_from_word(word, lda_model, topic_map):
+    try:
+        topics_raw = lda_model.get_term_topics(word, minimum_probability=0.0000001)
+        topic_dict = {topic_map[tup[0]]: tup[1] for tup in topics_raw}
+        best_topic = max(topic_dict, key=topic_dict.get)
+    except:
+        best_topic = 'miscellaneous'
+
+    return best_topic
 
 def parse_aspects(nlp, review):
     doc = nlp(review)
