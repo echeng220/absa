@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as et
 import pandas as pd
 import numpy as np
+import pickle
 
 import spacy
 spacy.load('en_core_web_sm')
@@ -16,6 +17,7 @@ from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from gensim import corpora
+from gensim.models import LdaModel
 
 
 from operator import itemgetter
@@ -258,6 +260,60 @@ def parse_aspects(nlp, review):
         aspects = dict(zip(targets, adjectives))
 
     return aspects
+
+def pos_prediction(restaurant_review):
+    nlp = spacy.load("en_core_web_sm")
+    targets = parse_targets(nlp, restaurant_review)
+    adjectives = parse_adjectives(nlp, restaurant_review)
+    sid = SentimentIntensityAnalyzer()
+
+    corpus = pickle.load(open('corpus.pkl', 'rb'))
+    dictionary = corpora.Dictionary.load('dictionary.gensim')
+    lda_model = LdaModel.load('best_lda_model.gensim')
+
+    outputs = []
+    if len(targets) == len(adjectives): 
+        for i in range(0, len(targets)):
+            output = {}
+            
+            output.update({'aspect': targets[i], 'adjective': adjectives[i]})
+            try:
+                topic = get_topic_from_word(prepare_text_for_lda(targets[i])[0], lda_model, TOPIC_MAP)
+            except:
+                topic = 'miscellaneous'
+            score = sid.polarity_scores(adjectives[i])['compound']
+            sentiment = 'positive' if score > 0 else ('neutral' if score == 0 else 'negative')
+            output.update({'topic': topic, 'polarity': sentiment})
+            outputs.append(output)
+    elif len(targets) > len(adjectives):
+        for i in range(0, len(targets)):
+            output = {}
+            try:
+                topic = get_topic_from_word(prepare_text_for_lda(targets[i])[0], lda_model, TOPIC_MAP)
+                score = sid.polarity_scores(adjectives[i])['compound']
+                sentiment = 'positive' if score > 0 else ('neutral' if score == 0 else 'negative')
+                output.update({'aspect': targets[i], 'adjective': adjectives[i], 'topic': topic, 'polarity': sentiment})
+            except IndexError:
+                topic = get_topic_from_word(prepare_text_for_lda(targets[i])[0], lda_model, TOPIC_MAP)
+                output.update({'aspect': targets[i], 'adjective': 'None', 'topic': topic, 'polarity': 'None'})
+            
+            outputs.append(output)
+    elif len(targets) < len(adjectives):
+        for i in range(0, len(adjectives)):
+            output = {}
+            try:
+                topic = get_topic_from_word(prepare_text_for_lda(targets[i])[0], lda_model, TOPIC_MAP)
+                score = sid.polarity_scores(adjectives[i])['compound']
+                sentiment = 'positive' if score > 0 else ('neutral' if score == 0 else 'negative')
+                output.update({'aspect': targets[i], 'adjective': adjectives[i], 'topic': topic, 'polarity': sentiment})
+            except IndexError:
+                score = sid.polarity_scores(adjectives[i])['compound']
+                sentiment = 'positive' if score > 0 else ('neutral' if score == 0 else 'negative')
+                output.update({'aspect': 'None', 'adjective': adjectives[i], 'topic': 'miscellaneous', 'polarity': sentiment})
+            outputs.append(output)
+    
+    return pd.DataFrame(outputs)
+    
 class MultiColumnLabelEncoder:
     def __init__(self,columns=None):
         self.columns = columns # array of column names to encode

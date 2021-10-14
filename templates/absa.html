@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+    
+{% endblock %}
+
+{% block body %}
+    <h1>Aspect Based Sentiment Analysis: POS Tagging + LDA</h1>
+
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Evan Cheng</legend>
+                <div class="form-group">
+                    {{ form.review.label(class="form-control-label") }}
+                    {{ form.review(class="form-control form-control-lg") }}
+                </div>
+            </fieldset>
+            <div class="form-group">
+                {{ form.submit(class="btn-outline-info") }}
+            </div>
+        </form>
+    </div>
+
+<!-- {% for post in posts %}
+<h2>{{ post.author }} </h2>
+<p>{{ post.title }} </p>
+{% endfor %} -->
+
+{% endblock %}
