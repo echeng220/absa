@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 
 import spacy
-spacy.load('en_core_web_sm')
+nlp = spacy.load("en_core_web_sm")
 from spacy.lang.en import English
 parser  = English()
 
@@ -23,6 +23,7 @@ from gensim.models import LdaModel
 from operator import itemgetter
 
 TOPIC_MAP = {0: 'menu', 1: 'service', 2: 'miscellaneous', 3: 'place', 4: 'price', 5: 'food', 6: 'staff'}
+lda_model = LdaModel.load('best_lda_model.gensim')
 
 def encode_category(sentiments, category):
     """Return the sentiment for a specific category in a dictionary where the keys are the categories, 
@@ -262,14 +263,10 @@ def parse_aspects(nlp, review):
     return aspects
 
 def pos_prediction(restaurant_review):
-    nlp = spacy.load("en_core_web_sm")
-    targets = parse_targets(nlp, restaurant_review)
-    adjectives = parse_adjectives(nlp, restaurant_review)
     sid = SentimentIntensityAnalyzer()
 
-    corpus = pickle.load(open('corpus.pkl', 'rb'))
-    dictionary = corpora.Dictionary.load('dictionary.gensim')
-    lda_model = LdaModel.load('best_lda_model.gensim')
+    targets = parse_targets(nlp, restaurant_review)
+    adjectives = parse_adjectives(nlp, restaurant_review)
 
     outputs = []
     if len(targets) == len(adjectives): 
@@ -294,8 +291,7 @@ def pos_prediction(restaurant_review):
                 sentiment = 'positive' if score > 0 else ('neutral' if score == 0 else 'negative')
                 output.update({'aspect': targets[i], 'adjective': adjectives[i], 'topic': topic, 'polarity': sentiment})
             except IndexError:
-                topic = get_topic_from_word(prepare_text_for_lda(targets[i])[0], lda_model, TOPIC_MAP)
-                output.update({'aspect': targets[i], 'adjective': 'None', 'topic': topic, 'polarity': 'None'})
+                output.update({'aspect': targets[i], 'adjective': 'None', 'topic': targets[i], 'polarity': 'None'})
             
             outputs.append(output)
     elif len(targets) < len(adjectives):
@@ -312,7 +308,12 @@ def pos_prediction(restaurant_review):
                 output.update({'aspect': 'None', 'adjective': adjectives[i], 'topic': 'miscellaneous', 'polarity': sentiment})
             outputs.append(output)
     
-    return pd.DataFrame(outputs)
+    df = pd.DataFrame(outputs)
+    boolean_series = ~df.aspect.isin(list(set(nltk.corpus.stopwords.words('english'))) + ['I'])
+    output_df = df[boolean_series].reset_index(drop=True)
+    return output_df
+        
+
     
 class MultiColumnLabelEncoder:
     def __init__(self,columns=None):

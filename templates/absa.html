@@ -6,26 +6,33 @@
 
 {% block body %}
     <h1>Aspect Based Sentiment Analysis: POS Tagging + LDA</h1>
+    <h3>Evan Cheng</h3>
 
-    <div class="content-section">
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Evan Cheng</legend>
-                <div class="form-group">
-                    {{ form.review.label(class="form-control-label") }}
-                    {{ form.review(class="form-control form-control-lg") }}
-                </div>
-            </fieldset>
+    <div class="container">
+        
+        <form method="POST" action="/process">
             <div class="form-group">
-                {{ form.submit(class="btn-outline-info") }}
-            </div>
+                    <label>Restaurant Review:</label>
+            <textarea type="text" rows="5" cols="5" class="form-control"  name="rawtext" required="true">   </textarea>
+            <br/>
+			<br/>
+            <button type="reset" class="btn btn-primary"><i class="fa fa-eraser"></i> Clear</button>
+            <button type="submit" class="btn btn-info"><i class="fa fa-database"></i> Submit</button>
+         
+        </div>
         </form>
     </div>
 
-<!-- {% for post in posts %}
-<h2>{{ post.author }} </h2>
-<p>{{ post.title }} </p>
-{% endfor %} -->
+    <div class="container">
+        <!-- <div class="alert alert-success" role="alert">
+            <p class="alert-heading">Review processed!</p>
+        </div> -->
+
+        <table>
+            {% for table in tables %}
+                {{ table|safe }}
+            {% endfor %}
+        </table>
+    </div>
 
 {% endblock %}
