@@ -24,14 +24,29 @@
     </div>
 
     <div class="container">
-        <p>Original Review:</p>
+        <p><b>Original Review:</b></p>
         <p>"{{ request.form['rawtext'] }}"</p>
+        <br>
 
         <table>
+            <label>POS Tagging, then LDA:</label>
             {% for table in tables %}
                 {{ table|safe }}
             {% endfor %}
         </table>
+    </div>
+    <br>
+    <br>
+
+    <div class="container">
+        <table>
+            <label>LDA, then POS Tagging:</label>
+            {% for table in tables2 %}
+                {{ table|safe }}
+            {% endfor %}
+        </table>
+        <br>
+        <br>
     </div>
 
 {% endblock %}

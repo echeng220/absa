@@ -2,6 +2,7 @@ import xml.etree.ElementTree as et
 import pandas as pd
 import numpy as np
 import pickle
+import re
 
 import spacy
 nlp = spacy.load("en_core_web_sm")
@@ -23,7 +24,11 @@ from gensim.models import LdaModel
 from operator import itemgetter
 
 TOPIC_MAP = {0: 'menu', 1: 'service', 2: 'miscellaneous', 3: 'place', 4: 'price', 5: 'food', 6: 'staff'}
+
+
 lda_model = LdaModel.load('best_lda_model.gensim')
+sid = SentimentIntensityAnalyzer()
+dictionary = corpora.Dictionary.load('dictionary.gensim')
 
 def encode_category(sentiments, category):
     """Return the sentiment for a specific category in a dictionary where the keys are the categories, 
@@ -197,7 +202,7 @@ def parse_targets(nlp, review):
     target = ''
 
     for token in doc:
-        if (token.dep_ in ['nsubj','dobj', 'pobj', 'ROOT']) and (token.pos_ in ['NOUN', 'PROPN', 'PRON']):
+        if (token.dep_ in ['nsubj','dobj', 'pobj', 'ROOT']) and (token.pos_ in ['NOUN', 'PROPN']):
             target = token.text
             targets.append(target)
 
@@ -262,8 +267,17 @@ def parse_aspects(nlp, review):
 
     return aspects
 
+def lda_prediction(restaurant_review):
+    clean_sample = prepare_text_for_lda(restaurant_review)
+
+    sample_2bow = dictionary.doc2bow(clean_sample)
+
+    topics = lda_model.get_document_topics(sample_2bow)
+    topic_dict = {TOPIC_MAP[x[0]]:x[-1] for x in topics}
+    top_topic = max(topic_dict.items(), key=lambda x:x[1])
+    return top_topic
+
 def pos_prediction(restaurant_review):
-    sid = SentimentIntensityAnalyzer()
 
     targets = parse_targets(nlp, restaurant_review)
     adjectives = parse_adjectives(nlp, restaurant_review)
@@ -312,6 +326,26 @@ def pos_prediction(restaurant_review):
     boolean_series = ~df.aspect.isin(list(set(nltk.corpus.stopwords.words('english'))) + ['I'])
     output_df = df[boolean_series].reset_index(drop=True)
     return output_df
+        
+def pos_chunk_prediction(restaurant_review):
+    outputs = []
+
+    phrases = re.split('[?.,;!]', restaurant_review)
+    phrases = [phrase for phrase in phrases if len(phrase) > 4]
+
+    for phrase in phrases:
+        output = {}
+        topic = lda_prediction(phrase)[0]
+        score = sid.polarity_scores(phrase)['compound']
+        sentiment = 'positive' if score > 0 else ('neutral' if score == 0 else 'negative')
+        subjects = parse_targets(nlp, phrase)
+        descriptors = parse_adjectives(nlp, phrase)
+        output.update({'phrase': phrase, 'topic': topic, 'sentiment': sentiment, 'subjects': subjects, 'descriptors': descriptors})
+        outputs.append(output)
+        
+    
+    df = pd.DataFrame(outputs)
+    return df
         
 
     

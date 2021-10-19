@@ -9,10 +9,13 @@ import os
 
 from flask import Flask, render_template, request
 
+from absa_functions import *
+
 nlp = spacy.load("en_core_web_sm")
 nltk.download('vader_lexicon')
 
-from absa_functions import *
+pd.set_option('display.width', 1000)
+pd.set_option('colheader_justify', 'center')
 
 app = Flask(__name__)
 
@@ -30,7 +33,10 @@ def process():
 
         df = pos_prediction(rawtext)
 
-    return render_template('absa.html', title='Restaurant Reviews', tables=[df.to_html(classes='data', header="true")])
+        df_chunk = pos_chunk_prediction(rawtext)
+
+    return render_template('absa.html', title='Restaurant Reviews', tables=[df.to_html(classes='mystyle', header="true")],
+                            tables2 = [df_chunk.to_html(classes='mystyle', header="true")])
   
 if __name__ == "__main__":
     app.run(debug=True)
