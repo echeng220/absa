@@ -1,5 +1,3 @@
-#https://www.kdnuggets.com/2019/04/building-flask-api-automatically-extract-named-entities-spacy.html
-
 from operator import pos
 import pandas as pd
 import numpy as np
