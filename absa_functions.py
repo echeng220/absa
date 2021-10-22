@@ -305,7 +305,8 @@ def pos_prediction(restaurant_review):
                 sentiment = 'positive' if score > 0 else ('neutral' if score == 0 else 'negative')
                 output.update({'aspect': targets[i], 'adjective': adjectives[i], 'topic': topic, 'polarity': sentiment})
             except IndexError:
-                output.update({'aspect': targets[i], 'adjective': 'None', 'topic': targets[i], 'polarity': 'None'})
+                # output.update({'aspect': targets[i], 'adjective': 'None', 'topic': targets[i], 'polarity': 'None'})
+                continue
             
             outputs.append(output)
     elif len(targets) < len(adjectives):

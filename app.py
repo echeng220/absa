@@ -29,10 +29,14 @@ def process():
     if request.method == 'POST':
         rawtext = request.form['rawtext']
 
-        df = pos_prediction(rawtext)
+        try:
+            df = pos_prediction(rawtext)
+        except:
+            df = pd.DataFrame()
 
         df_chunk = pos_chunk_prediction(rawtext)
 
+    # return render_template('absa.html', title='Restaurant Reviews', tables2 = [df_chunk.to_html(classes='mystyle', header="true")])
     return render_template('absa.html', title='Restaurant Reviews', tables=[df.to_html(classes='mystyle', header="true")],
                             tables2 = [df_chunk.to_html(classes='mystyle', header="true")])
   

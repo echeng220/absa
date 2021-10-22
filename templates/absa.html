@@ -29,7 +29,7 @@
         <br>
 
         <table>
-            <label>POS Tagging, then LDA:</label>
+            <label><b>Model 1: POS Tagging --> LDA --> Sentiment Analysis</b></label>
             {% for table in tables %}
                 {{ table|safe }}
             {% endfor %}
@@ -40,7 +40,7 @@
 
     <div class="container">
         <table>
-            <label>LDA, then POS Tagging:</label>
+            <label><b>Model 2: Split --> LDA --> Sentiment Analysis --> POS Tagging</b></label>
             {% for table in tables2 %}
                 {{ table|safe }}
             {% endfor %}
