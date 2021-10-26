@@ -332,7 +332,7 @@ def pos_chunk_prediction(restaurant_review):
     outputs = []
 
     phrases = re.split('[?.,;!]', restaurant_review)
-    phrases = [phrase for phrase in phrases if len(phrase) > 4]
+    phrases = [phrase for phrase in phrases if len(phrase) > 5]
 
     for phrase in phrases:
         output = {}
