@@ -9,5 +9,7 @@ RUN python -c "import nltk; nltk.download('vader_lexicon'); nltk.download('stopw
 
 COPY . .
 
+EXPOSE 80
+
 ENTRYPOINT [ "python" ]
 CMD ["app.py"]
