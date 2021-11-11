@@ -1,44 +1,58 @@
 {% extends 'layout.html' %}
 
 {% block head %}
-    
+
 {% endblock %}
 
 {% block body %}
-    <h1>Aspect Based Sentiment Analysis: POS Tagging + LDA</h1>
-    <h3>Evan Cheng</h3>
+<script>
+    function use_example() {
+        textarea = document.getElementById("review-text")
+        textarea.value = "Nice and cozy sushi place. Rich miso soup and the green day roll was super tasty. Miki was really nice and friendly."
+    }
+</script>
+<h3 class="title">Restaurant Review Aspect-based Sentiment Analysis</h3>
 
-    <div class="container">
-        
-        <form method="POST" action="/process">
-            <div class="form-group">
-                    <label>Restaurant Review:</label>
-            <textarea type="text" rows="5" cols="5" class="form-control"  name="rawtext" required="true"></textarea>
-            <br/>
-			<br/>
+<div class="container form-container">
+
+    <form method="POST" action="/process">
+        <div class="form-group">
+            <p>Example:
+                <u onclick="use_example()">Nice and cozy sushi place. Rich miso soup and the green day roll was super
+                    tasty. Miki was really nice and friendly.</u>
+                (<a
+                    href="https://www.google.com/maps/contrib/109957203840534225670/place/ChIJCY6ScbE0K4gRVKncxW5Gylk/@43.8094151,-79.4399621,11z/data=!4m6!1m5!8m4!1e1!2s109957203840534225670!3m1!1e1?hl=en-CA">source</a>)
+            </p>
+            <textarea type="text" rows="5" cols="5" class="form-control" name="rawtext" required="true"
+                id="review-text"></textarea>
+            <br />
+            <br />
+            <button type="submit" class="btn btn-info" onclick="show_result()"><i class="fa fa-database"></i>
+                Submit</button>
             <button type="reset" class="btn btn-primary"><i class="fa fa-eraser"></i> Clear</button>
-            <button type="submit" class="btn btn-info"><i class="fa fa-database"></i> Submit</button>
-         
+
         </div>
-        </form>
-    </div>
+    </form>
+</div>
 
-    <div class="container">
-        <p><b>Original Review:</b></p>
-        <p>"{{ request.form['rawtext'] }}"</p>
-        <br>
+<div class="container" id="result-container">
+    <p><b>Your Input</b></p>
+    <p>"{{ request.form['rawtext'] }}"</p>
 
-    </div>
-
-    <div class="container">
-        <table>
-            <label><b>Model: Split --> LDA --> Sentiment Analysis --> POS Tagging</b></label>
-            {% for table in tables2 %}
-                {{ table|safe }}
-            {% endfor %}
-        </table>
-        <br>
-        <br>
-    </div>
+    <p><b>Steps</b></p>
+    <ol>
+        <li>Tokenization</li>
+        <li>Topic Modeling (LDA)</li>
+        <li>Sentiment Analysis (Vader)</li>
+        <li>POS Tagging</li>
+    </ol>
+    <table>
+        {% for table in tables2 %}
+        {{ table|safe }}
+        {% endfor %}
+    </table>
+    <br>
+    <br>
+</div>
 
 {% endblock %}
